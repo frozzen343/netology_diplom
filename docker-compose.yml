@@ -1,0 +1,49 @@
+version: '3.9'
+
+
+networks:
+  local:
+
+volumes:
+  pdata:
+  static:
+
+
+services:    
+  postgredb:
+    image: postgres:13.9
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - pdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - local
+
+  # nginx:
+  #   image: nginx:latest 
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+  #     - static:/src/static
+  #   networks:
+  #     - local
+
+  diplom:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      WAIT_HOSTS: postgredb:5432
+    networks:
+      - local
+    volumes:
+      - .:/src
+      # - static:/src/vcrm/static
