@@ -150,7 +150,7 @@ class Product(models.Model):
 
 
 class ProductInfo(models.Model):
-    name = models.CharField('Название', max_length=80, blank=True)
+    model = models.CharField('Модель', max_length=80, blank=True)
     external_id = models.PositiveIntegerField('Внешний ИД')
     quantity = models.PositiveIntegerField('Количество')
     price = models.PositiveIntegerField('Цена')

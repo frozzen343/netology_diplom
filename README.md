@@ -1,3 +1,5 @@
 # Documentation
 
-in progress...
+```sh
+docker-compose up
+```
