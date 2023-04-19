@@ -1,0 +1,19 @@
+# Editors
+.vscode/
+.idea/
+
+# Mac/OSX
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Environments
+venv/
+
+# python cache
+__pycache__/
+.pytest_cache
+
+# local settings
+
