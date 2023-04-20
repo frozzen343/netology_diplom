@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from yaml import load as load_yaml, Loader
 from requests import get
 
@@ -13,17 +14,13 @@ class PartnerUpdate(APIView):
     """
     Класс для обновления прайса от поставщика
     """
-    def post(self, request, *args, **kwargs):
-        # TODO: users, permissions
-        # if not request.user.is_authenticated:
-        #     return Response({'Status': False,
-        #                      'Error': 'Log in required'},
-        #                     status=403)
+    permission_classes = [IsAuthenticated]
 
-        # if request.user.type != 'shop':
-        #     return Response({'Status': False,
-        #                      'Error': 'Только для магазинов'},
-        #                     status=403)
+    def post(self, request, *args, **kwargs):
+        if request.user.type != 'shop':
+            return Response({'Status': False,
+                             'Error': 'Только для магазинов'},
+                            status=403)
 
         url = request.data.get('url')
         if url:
