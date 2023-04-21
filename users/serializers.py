@@ -1,6 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from users.models import User, Contact
 
@@ -11,6 +11,8 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = ('id', 'address', 'user', 'phone')
         read_only_fields = ('id',)
         extra_kwargs = {
+            'address': {'required': True},
+            'phone': {'required': True},
             'user': {'write_only': True}
         }
 
@@ -35,15 +37,13 @@ class UserSerializer(serializers.ModelSerializer):
         if attrs.get('password1') and attrs.get('password2'):
             try:
                 validate_password(attrs['password1'])
-            except Exception as password_error:
-                error_array = []
-                for item in password_error:
-                    error_array.append(item)
-                raise serializers.ValidationError(
-                    {'password': error_array})
+            except ValidationError as err:
+                raise serializers.ValidationError({'password1': err})
+
             if attrs['password1'] != attrs['password2']:
                 raise serializers.ValidationError(
                     {'password2': "Пароли не совпадают"})
+
             attrs['password'] = attrs['password1']
             del attrs['password1']
             del attrs['password2']
