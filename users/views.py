@@ -105,6 +105,7 @@ class ContactView(APIView):
 
     # добавить новый контакт
     def post(self, request, *args, **kwargs):
+        request.data._mutable = True
         request.data.update({'user': request.user.id})
         serializer = ContactSerializer(data=request.data)
         if serializer.is_valid():
