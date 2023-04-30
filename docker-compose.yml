@@ -1,6 +1,5 @@
 version: '3.9'
 
-
 networks:
   local:
 
@@ -9,7 +8,7 @@ volumes:
   static:
 
 
-services:    
+services:
   postgredb:
     image: postgres:13.9
     ports:
@@ -21,6 +20,26 @@ services:
       - .env
     networks:
       - local
+
+  redis:
+    image: redis:7.0.0-alpine3.15
+    ports:
+      - "6379:6379"
+    networks:
+      - local
+
+  celery-worker:
+    build: .
+    entrypoint: celery
+    command: -A diplom.celery worker
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - local
+    volumes:
+      - .:/src
 
   # nginx:
   #   image: nginx:latest 

@@ -1,11 +1,11 @@
 from django.contrib.auth import authenticate
-from django.core.mail import send_mail
 from django.db.models import Q
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+from diplom.celery import send_email
 from users.models import Contact
 from users.serializers import UserSerializer, ContactSerializer
 
@@ -19,9 +19,9 @@ class RegisterAccount(APIView):
         if user_serializer.is_valid():
             user = user_serializer.save()
             user.save()
-            send_mail('Подтверждение почты',
-                      user.auth_token.key,
-                      None, [user.email])
+            send_email('Подтверждение почты',
+                       user.auth_token.key,
+                       [user.email])
             return Response({'Status': True})
         else:
             return Response({'Status': False,
@@ -52,6 +52,7 @@ class LoginAccount(APIView):
     """
     Класс для авторизации пользователей
     """
+
     def post(self, request, *args, **kwargs):
         if {'email', 'password'}.issubset(request.data):
             user = authenticate(request, username=request.data['email'],

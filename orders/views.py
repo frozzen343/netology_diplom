@@ -1,4 +1,3 @@
-from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Sum, F, Q
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from ujson import loads as load_json
 
+from diplom.celery import send_email
 from orders.models import Order, OrderItem
 from orders.serializers import OrderSerializer, OrderItemSerializer
 
@@ -146,9 +146,9 @@ class OrderView(APIView):
                                  'Errors': error})
             else:
                 if is_updated:
-                    send_mail('Обновление статуса заказа',
-                              'Заказ сформирован',
-                              None, [request.user.email])
+                    send_email('Обновление статуса заказа',
+                               'Заказ сформирован',
+                               [request.user.email])
                     return Response({'Status': True})
 
         return Response({'Status': False,
