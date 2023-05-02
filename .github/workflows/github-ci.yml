@@ -7,7 +7,7 @@ on:
     branches: [ dev ]
 
 jobs:
-  tests:
+  check:
     runs-on: ubuntu-20.04
     env:
       SECRET_KEY: "django-insecure-$s@uf89+k-i*rwb1!31&yubw1u#to_test_project!"
@@ -48,5 +48,5 @@ jobs:
       - name: Lint with flake8
         run: flake8 .
 
-#      - name: Test with pytest
-#        run: pytest
+      - name: Test with pytest
+        run: pytest

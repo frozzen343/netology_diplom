@@ -16,5 +16,4 @@ __pycache__/
 .pytest_cache
 
 # local settings
-static/admin/
-static/rest_framework/
+

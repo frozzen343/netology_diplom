@@ -36,4 +36,5 @@ celery -A diplom.celery worker
 after making changes
 ```sh
 flake8 .
+pytest
 ```
