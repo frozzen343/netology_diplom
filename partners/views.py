@@ -10,8 +10,8 @@ from requests import get
 
 from orders.models import Order
 from orders.serializers import OrderSerializer
+from partners.models import Shop
 from partners.tasks import import_yaml
-from products.models import Shop
 from products.serializers import ShopSerializer
 
 

@@ -1,6 +1,7 @@
 from diplom.celery import app
 
-from products.models import Shop, Category, ProductInfo, Product, Parameter, \
+from partners.models import Shop
+from products.models import Category, ProductInfo, Product, Parameter, \
     ProductParameter
 
 

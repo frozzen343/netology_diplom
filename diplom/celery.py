@@ -17,7 +17,7 @@ def __send_email(*args):
     if settings.EMAIL_HOST:
         send_mail(args[0], args[1], None, args[2])
     else:
-        print(f'mail not configured!')
+        print('mail not configured!')
 
 
 def send_email(title, body, to: list):

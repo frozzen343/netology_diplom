@@ -1,5 +1,4 @@
-from django.core.mail import EmailMultiAlternatives
-from django.dispatch import receiver, Signal
+from django.dispatch import receiver
 from django_rest_passwordreset.signals import reset_password_token_created
 
 from diplom.celery import send_email

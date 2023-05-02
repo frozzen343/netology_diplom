@@ -1,0 +1,13 @@
+[flake8]
+
+# Excluding some directories:
+exclude =
+  __pycache__
+  .pytest_chache
+  venv
+  env
+  */migrations
+  manage.py
+  settings.py
+
+per-file-ignores = ./users/apps.py:F401

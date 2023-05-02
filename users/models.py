@@ -91,7 +91,6 @@ class User(AbstractUser):
 
 
 class Contact(models.Model):
-    #  TODO: Отличия от кода
     address = models.CharField('Адрес', max_length=200, blank=True)
     phone = models.CharField('Телефон', max_length=20)
     user = models.ForeignKey(User, verbose_name='Пользователь',
