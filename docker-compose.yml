@@ -41,16 +41,16 @@ services:
     volumes:
       - .:/src
 
-  # nginx:
-  #   image: nginx:latest 
-  #   restart: always
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-  #     - static:/src/static
-  #   networks:
-  #     - local
+  nginx:
+     image: nginx:latest
+     restart: always
+     ports:
+       - "80:80"
+     volumes:
+       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+       - static:/src/static
+     networks:
+       - local
 
   diplom:
     build: .
@@ -65,4 +65,4 @@ services:
       - local
     volumes:
       - .:/src
-      # - static:/src/vcrm/static
+      - static:/src/static

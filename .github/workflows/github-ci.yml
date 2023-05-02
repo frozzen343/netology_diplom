@@ -1,0 +1,52 @@
+name: check code
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-20.04
+    env:
+      SECRET_KEY: "django-insecure-$s@uf89+k-i*rwb1!31&yubw1u#to_test_project!"
+      DEBUG: "True"
+      ALLOWED_HOSTS: "*"
+      POSTGRES_DB: "diplom"
+      POSTGRES_USER: "username"
+      POSTGRES_PASSWORD: "userp@ss#!"
+      PG_HOST: "localhost"
+      PG_PORT: "5432"
+    services:
+      postgres_main:
+        image: postgres:13.9
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options:
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Lint with flake8
+        run: flake8 .
+
+#      - name: Test with pytest
+#        run: pytest
