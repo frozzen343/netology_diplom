@@ -14,6 +14,8 @@ venv/
 # python cache
 __pycache__/
 .pytest_cache
+.coverage
 
 # local settings
-
+static/admin/
+static/rest_framework/

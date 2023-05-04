@@ -35,6 +35,7 @@ celery -A diplom.celery worker
 ## Development
 after making changes
 ```sh
+pytest --cov=.
 flake8 .
 pytest
 ```
