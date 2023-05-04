@@ -18,11 +18,11 @@ jobs:
       POSTGRES_PASSWORD: "userp@ss#!"
       PG_HOST: "localhost"
       PG_PORT: "5432"
-      REDIS_HOST: "redis"
+      REDIS_HOST: "localhost"
       REDIS_PORT: "6379"
     services:
       postgres_main:
-        image: postgres:13.9
+        image: postgres:latest
         env:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
@@ -34,16 +34,10 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
-      redis_main:
-        image: redis
-        env:
-          REDIS_HOST: ${{ env.REDIS_HOST }}
-          REDIS_PORT: ${{ env.REDIS_PORT }}
-        options:
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+      redis:
+        image: redis:alpine
+        ports: [ "6379:6379" ]
+        options: --entrypoint redis-server
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3

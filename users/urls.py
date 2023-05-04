@@ -5,6 +5,7 @@ from django_rest_passwordreset.views import reset_password_request_token,\
 from users.views import RegisterAccount, ConfirmAccount, LoginAccount, \
     AccountDetails, ContactView
 
+
 urlpatterns = [
     path('register', RegisterAccount.as_view(), name='user_register'),
     path('confirm', ConfirmAccount.as_view(), name='user_confirm'),
