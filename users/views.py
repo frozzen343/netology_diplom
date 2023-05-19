@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from django.db.models import Q
+from rest_framework import viewsets, status
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,25 +7,26 @@ from rest_framework.permissions import IsAuthenticated
 
 from diplom.celery import send_email
 from users.models import Contact
-from users.serializers import UserSerializer, ContactSerializer
+from users.serializers import UserSerializer, ContactSerializer, \
+    ContactCreateUpdateSerializer
 
 
 class RegisterAccount(APIView):
     """
     Для регистрации покупателей, продавцов
     """
+
     def post(self, request, *args, **kwargs):
         user_serializer = UserSerializer(data=request.data)
         if user_serializer.is_valid():
             user = user_serializer.save()
-            user.save()
             send_email('Подтверждение почты',
                        user.auth_token.key,
                        [user.email])
-            return Response({'Status': True})
-        else:
-            return Response({'Status': False,
-                             'Errors': user_serializer.errors})
+            return Response({'Status': True}, status=status.HTTP_201_CREATED)
+
+        return Response({'Status': False, 'Errors': user_serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConfirmAccount(APIView):
@@ -92,65 +93,25 @@ class AccountDetails(APIView):
                              'Errors': user_serializer.errors})
 
 
-class ContactView(APIView):
+class ContactViewSet(viewsets.ModelViewSet):
     """
     Класс для работы с контактами покупателей
     """
     permission_classes = [IsAuthenticated]
+    queryset = Contact.objects.all()
 
-    # получить мои контакты
-    def get(self, request, *args, **kwargs):
-        contact = Contact.objects.filter(user=request.user)
-        serializer = ContactSerializer(contact, many=True)
-        return Response(serializer.data)
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'update':
+            return ContactCreateUpdateSerializer
+        return ContactSerializer
 
-    # добавить новый контакт
-    def post(self, request, *args, **kwargs):
-        request.POST._mutable = True
-        request.data.update({'user': request.user.id})
-        serializer = ContactSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'Status': True})
-        else:
-            return Response({'Status': False,
-                             'Errors': serializer.errors})
+    def get_serializer(self, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
+        kwargs['context'] = self.get_serializer_context()
+        return serializer_class(*args, **kwargs)
 
-    # удалить контакты
-    def delete(self, request, *args, **kwargs):
-        items_sting = request.data.get('items')
-        if items_sting:
-            items_list = items_sting.split(',')
-            query = Q()
-            objects_deleted = False
-            for contact_id in items_list:
-                if contact_id.isdigit():
-                    query |= Q(user_id=request.user.id, id=contact_id)
-                    objects_deleted = True
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
 
-            if objects_deleted:
-                deleted_count = Contact.objects.filter(query).delete()[0]
-                return Response({'Status': True,
-                                 'Удалено объектов': deleted_count})
-        return Response({'Status': False,
-                         'Errors': 'Не указаны все необходимые аргументы'})
-
-    # редактировать контакт
-    def put(self, request, *args, **kwargs):
-        if {'id'}.issubset(request.data):
-            contact = Contact.objects.filter(id=request.data['id'],
-                                             user=request.user).first()
-            if contact:
-                serializer = ContactSerializer(contact,
-                                               data=request.data,
-                                               partial=True)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response({'Status': True})
-                else:
-                    return Response({'Status': False,
-                                     'Errors': serializer.errors})
-            return Response({'Status': False,
-                             'Errors': 'Не найдено'})
-        return Response({'Status': False,
-                         'Errors': 'Не указаны все необходимые аргументы'})
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
