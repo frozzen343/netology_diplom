@@ -1,96 +1,85 @@
-from django.contrib.auth import authenticate
-from rest_framework import viewsets, status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import viewsets, status, serializers
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from diplom.celery import send_email
-from users.models import Contact
+from users.models import Contact, User
 from users.serializers import UserSerializer, ContactSerializer, \
-    ContactCreateUpdateSerializer
+    ContactCreateUpdateSerializer, EmailConfirmationSerializer, \
+    UserLoginSerializer
 
 
-class RegisterAccount(APIView):
+class UserRegistrationView(CreateAPIView):
     """
     Для регистрации покупателей, продавцов
     """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
-    def post(self, request, *args, **kwargs):
-        user_serializer = UserSerializer(data=request.data)
-        if user_serializer.is_valid():
-            user = user_serializer.save()
-            send_email('Подтверждение почты',
-                       user.auth_token.key,
-                       [user.email])
-            return Response({'Status': True}, status=status.HTTP_201_CREATED)
-
-        return Response({'Status': False, 'Errors': user_serializer.errors},
-                        status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        user = serializer.save()
+        send_email('Подтверждение почты',
+                   user.auth_token.key,
+                   [user.email])
 
 
-class ConfirmAccount(APIView):
+@extend_schema(
+    responses={
+       201: inline_serializer(
+           name='Response_confirm',
+           fields={'detail': serializers.CharField()}),
+    }
+)
+class EmailConfirmationView(APIView):
     """
     Класс для подтверждения почтового адреса
     """
+    serializer_class = EmailConfirmationSerializer
+
     def post(self, request, *args, **kwargs):
-        if {'email', 'token'}.issubset(request.data):
-            token = Token.objects.filter(user__email=request.data['email'],
-                                         key=request.data['token']).first()
-            if token:
-                token.user.is_active = True
-                token.user.save()
-                return Response({'Status': True})
-            else:
-                return Response({'Status': False,
-                                 'Errors': 'Неправильный токен или email'})
-
-        return Response({'Status': False,
-                         'Errors': 'Не указаны все необходимые аргументы'})
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({"detail": "Email confirmed successfully."},
+                        status=status.HTTP_201_CREATED)
 
 
-class LoginAccount(APIView):
+@extend_schema(
+    responses={
+       200: inline_serializer(
+           name='Response_login',
+           fields={'detail': serializers.CharField(),
+                   'token': serializers.CharField()}),
+    }
+)
+class UserLoginView(APIView):
     """
     Класс для авторизации пользователей
     """
+    serializer_class = UserLoginSerializer
 
     def post(self, request, *args, **kwargs):
-        if {'email', 'password'}.issubset(request.data):
-            user = authenticate(request, username=request.data['email'],
-                                password=request.data['password'])
-            if user:
-                if user.is_active:
-                    token = Token.objects.get(user=user)
-                    return Response({'Status': True, 'Token': token.key})
-            return Response({'Status': False,
-                             'Errors': 'Не удалось авторизовать'})
-
-        return Response({'Status': False,
-                         'Errors': 'Не указаны все необходимые аргументы'})
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token = Token.objects.get(user=user)
+        return Response({"detail": "Успешная авторизация.",
+                         "token": token.key},
+                        status=status.HTTP_200_OK)
 
 
-class AccountDetails(APIView):
+class UserDetailView(RetrieveUpdateAPIView):
     """
     Класс для работы данными пользователя
     """
+    serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-    # получить данные
-    def get(self, request, *args, **kwargs):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
-
-    # Редактирование методом POST
-    def post(self, request, *args, **kwargs):
-        user_serializer = UserSerializer(request.user,
-                                         data=request.data,
-                                         partial=True)
-        if user_serializer.is_valid():
-            user_serializer.save()
-            return Response({'Status': True})
-        else:
-            return Response({'Status': False,
-                             'Errors': user_serializer.errors})
+    def get_object(self):
+        return self.request.user
 
 
 class ContactViewSet(viewsets.ModelViewSet):
@@ -111,7 +100,7 @@ class ContactViewSet(viewsets.ModelViewSet):
         return serializer_class(*args, **kwargs)
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        return self.queryset.filter(user=self.request.user).order_by('-id')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

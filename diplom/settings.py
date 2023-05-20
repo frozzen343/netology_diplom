@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'drf_spectacular',
     'rest_framework',
     'rest_framework.authtoken',
     'django_rest_passwordreset',
@@ -164,6 +165,18 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Service for ordering goods for retail chains API",
+    "VERSION": "0.0.1",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_SETTINGS": {
+        "filter": True,
+    },
+    "COMPONENT_SPLIT_REQUEST": True,
+    'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
 }
 
 EMAIL_HOST = getenv('SMTP_SERVER')

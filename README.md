@@ -1,7 +1,9 @@
 # Service for ordering goods for retail chains
 
 ## Api documentation
-[postman](https://documenter.getpostman.com/view/26733994/2s93eSZaVB)
+- [postman](https://documenter.getpostman.com/view/26733994/2s93eSZaVB)
+- swagger-ui:  http://localhost/api/schema/swagger-ui/
+- redoc:  http://localhost/api/schema/redoc/
 
 
 ## Installation Guide

@@ -1,5 +1,7 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 
 from users.models import User, Contact
 
@@ -22,7 +24,55 @@ class ContactCreateUpdateSerializer(serializers.ModelSerializer):
         }
 
 
+class EmailConfirmationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    token = serializers.CharField()
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        token = attrs.get('token')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid email.")
+
+        if not Token.objects.filter(user=user, key=token).exists():
+            raise serializers.ValidationError("Invalid token.")
+
+        user.is_active = True
+        user.save()
+
+        return attrs
+
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(style={'input_type': 'password'})
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if email and password:
+            user = authenticate(email=email, password=password)
+
+            if user:
+                if not user.is_active:
+                    raise serializers.ValidationError(
+                        "Пользователь неактивен.")
+            else:
+                raise serializers.ValidationError("Неверные учетные данные.")
+        else:
+            raise serializers.ValidationError(
+                "Необходимо предоставить электронную почту и пароль.")
+
+        attrs['user'] = user
+        return attrs
+
+
 class UserSerializer(serializers.ModelSerializer):
+    contacts = ContactSerializer(read_only=True, many=True)
     password = serializers.CharField(write_only=True, required=True)
     password_confirmation = serializers.CharField(write_only=True,
                                                   required=True)
