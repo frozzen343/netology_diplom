@@ -3,9 +3,8 @@ from django_rest_passwordreset.views import reset_password_request_token,\
     reset_password_confirm
 from rest_framework import routers
 
-from users.views import UserRegistrationView, EmailConfirmationView,\
+from users.views import UserRegistrationView, EmailConfirmationView, \
     UserLoginView, UserDetailView, ContactViewSet
-
 
 router = routers.DefaultRouter()
 router.register(r'contacts', ContactViewSet, basename='usercontact')

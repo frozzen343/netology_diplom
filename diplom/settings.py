@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'silk',
+    'social_django',
     'drf_spectacular',
     'rest_framework',
     'rest_framework.authtoken',
@@ -59,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'diplom.urls'
@@ -166,6 +169,14 @@ REST_FRAMEWORK = {
     ],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_THROTTLE_CLASSES': [
+            'rest_framework.throttling.AnonRateThrottle',
+            'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '50/min',
+        'user': '500/min'
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -178,6 +189,21 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
 }
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.vk.VKOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = getenv('VK_API_ID')
+SOCIAL_AUTH_VK_OAUTH2_SECRET = getenv('VK_API_KEY')
+SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['email']
+SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['email']
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'user_details'
+SOCIAL_AUTH_LOGIN_ERROR_URL = 'user_details'
+SOCIAL_AUTH_LOGIN_URL = 'user_details'
+SOCIAL_AUTH_USER_MODEL = AUTH_USER_MODEL
+
 
 EMAIL_HOST = getenv('SMTP_SERVER')
 EMAIL_HOST_USER = getenv('EMAIL')

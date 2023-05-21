@@ -78,13 +78,11 @@ class UserSerializer(serializers.ModelSerializer):
                                                   required=True)
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
+        password = validated_data.get('password')
         password_confirmation = validated_data.pop('password_confirmation')
         if password != password_confirmation:
             raise serializers.ValidationError("Пароли не совпадают")
         user = User.objects.create_user(**validated_data)
-        user.set_password(password)
-        user.save()
         return user
 
     def update(self, instance, validated_data):
