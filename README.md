@@ -5,6 +5,11 @@
 - swagger-ui:  http://localhost/api/schema/swagger-ui/
 - redoc:  http://localhost/api/schema/redoc/
 
+### Login via VK.com
+- create an application in vk.com
+- set up redirect url: http://localhost/auth/complete/vk-oauth2/
+- copy the id app, secret key to .env file
+
 
 ## Installation Guide
 

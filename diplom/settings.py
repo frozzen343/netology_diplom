@@ -195,13 +195,14 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+SOCIAL_AUTH_PIPELINE = (
+    'users.views.login_vk_pipeline',
+)
+
 SOCIAL_AUTH_VK_OAUTH2_KEY = getenv('VK_API_ID')
 SOCIAL_AUTH_VK_OAUTH2_SECRET = getenv('VK_API_KEY')
 SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['email']
 SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['email']
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'user_details'
-SOCIAL_AUTH_LOGIN_ERROR_URL = 'user_details'
-SOCIAL_AUTH_LOGIN_URL = 'user_details'
 SOCIAL_AUTH_USER_MODEL = AUTH_USER_MODEL
 
 
